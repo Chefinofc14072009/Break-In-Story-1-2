@@ -1,66 +1,57 @@
--- Aguarda os serviços carregarem
+-- ======================
+-- SERVIÇOS
+-- ======================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
--- Função para localizar o GiveTool
+-- ======================
+-- LOCALIZAR GIVETOOL
+-- ======================
 local function localizarGiveTool()
     local caminhos = {
         ReplicatedStorage:FindFirstChild("Events"),
         ReplicatedStorage:FindFirstChild("RemoteEvents")
     }
 
-    for _, caminho in pairs(caminhos) do
-        if caminho and caminho:FindFirstChild("GiveTool") then
-            return caminho:FindFirstChild("GiveTool")
+    for _, pasta in pairs(caminhos) do
+        if pasta and pasta:FindFirstChild("GiveTool") then
+            return pasta:FindFirstChild("GiveTool")
         end
     end
-
     return nil
 end
 
--- Tenta carregar a Rayfield
-local sucesso, Rayfield = pcall(function()
-    return loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-end)
+-- ======================
+-- RAYFIELD
+-- ======================
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
-if not sucesso or not Rayfield then
-    warn("❌ Falha ao carregar Rayfield!")
-    return
-end
-
--- Cria a Janela
 local Janela = Rayfield:CreateWindow({
     Name = "🍕 Break In Story Menu - Levi",
     LoadingTitle = "Lulu Engine",
-    LoadingSubtitle = "By Levi & Lulu 😈",
+    LoadingSubtitle = "Break In Story 1 & 2",
     ConfigurationSaving = { Enabled = false },
-    Discord = { Enabled = false },
     KeySystem = false
 })
 
--- Aba principal com botões normais
-local Principal = Janela:CreateTab("🎁 Itens", 4483362458)
+-- ======================
+-- ABA ITENS
+-- ======================
+local Itens = Janela:CreateTab("🎁 Itens", 4483362458)
 
--- Função para criar botão manual
 local function criarBotao(nome, item)
-    Principal:CreateButton({
+    Itens:CreateButton({
         Name = nome,
         Callback = function()
             local GiveTool = localizarGiveTool()
             if GiveTool then
                 GiveTool:FireServer(item)
-                Rayfield:Notify({
-                    Title = "Item entregue!",
-                    Content = nome .. " foi adicionado!",
-                    Duration = 3
-                })
             end
-        end,
+        end
     })
 end
 
--- Todos os botões manuais
 criarBotao("Golden Apple 🍏", "GoldenApple")
 criarBotao("Rainbow Pizza 🌈🍕", "RainbowPizza")
 criarBotao("Apple 🍎", "Apple")
@@ -79,10 +70,11 @@ criarBotao("Lollipop 🍭", "Lollipop")
 criarBotao("Expired BloxyCola 🧪", "ExpiredBloxyCola")
 criarBotao("Louise 🐀", "Louise")
 
--- Aba com auto-pegar
-local AutoTab = Janela:CreateTab("🔁 Auto Pegador", 4483362458)
+-- ======================
+-- ABA AUTO PEGADOR
+-- ======================
+local Auto = Janela:CreateTab("🔁 Auto Pegador", 4483362458)
 
--- Tabela de itens para o modo automático
 local ids = {
     ["Golden Apple 🍏"] = "GoldenApple",
     ["Rainbow Pizza 🌈🍕"] = "RainbowPizza",
@@ -103,14 +95,13 @@ local ids = {
     ["Louise 🐀"] = "Louise"
 }
 
--- Cria alternadores automáticos
 for nome, id in pairs(ids) do
-    AutoTab:CreateToggle({
+    Auto:CreateToggle({
         Name = nome,
         CurrentValue = false,
-        Callback = function(ativado)
+        Callback = function(v)
             task.spawn(function()
-                while ativado do
+                while v do
                     local GiveTool = localizarGiveTool()
                     if GiveTool then
                         GiveTool:FireServer(id)
@@ -122,22 +113,61 @@ for nome, id in pairs(ids) do
     })
 end
 
--- Aba para inventário
-local abaInv = Janela:CreateTab("🧹 Inventário", 4483362458)
+-- ======================
+-- ABA ENERGIA ⚡
+-- ======================
+local Energia = Janela:CreateTab("⚡ Energia", 4483362458)
 
--- Alternador: remove todos os itens do inventário em loop
-abaInv:CreateToggle({
+local function treinar(stat)
+    ReplicatedStorage
+        :WaitForChild("Events")
+        :WaitForChild("RainbowWhatStat")
+        :FireServer(stat)
+end
+
+Energia:CreateButton({
+    Name = "Treinar força 💪",
+    Callback = function()
+        treinar("Strength")
+    end
+})
+
+Energia:CreateButton({
+    Name = "Treinar velocidade 🧬",
+    Callback = function()
+        treinar("Speed")
+    end
+})
+
+Energia:CreateButton({
+    Name = "Treino máximo 🔥",
+    Callback = function()
+        for i = 1, 5 do
+            treinar("Strength")
+            treinar("Speed")
+        end
+    end
+})
+
+-- ======================
+-- ABA INVENTÁRIO (ÚLTIMA)
+-- ======================
+local Inv = Janela:CreateTab("🧹 Inventário", 4483362458)
+
+Inv:CreateToggle({
     Name = "❌ Anti-Itens (Remove tudo)",
     CurrentValue = false,
-    Callback = function(ativado)
+    Callback = function(v)
         task.spawn(function()
-            while ativado do
-                for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
-                    item:Destroy()
+            while v do
+                for _, t in pairs(LocalPlayer.Backpack:GetChildren()) do
+                    t:Destroy()
                 end
-                for _, item in pairs(LocalPlayer.Character:GetChildren()) do
-                    if item:IsA("Tool") then
-                        item:Destroy()
+                if LocalPlayer.Character then
+                    for _, t in pairs(LocalPlayer.Character:GetChildren()) do
+                        if t:IsA("Tool") then
+                            t:Destroy()
+                        end
                     end
                 end
                 task.wait(0.1)
@@ -146,20 +176,14 @@ abaInv:CreateToggle({
     end
 })
 
--- Campo para digitar nome do item e dar automaticamente
-abaInv:CreateInput({
-    Name = "🔎 Procurar e Pegar Item",
-    PlaceholderText = "Escreva o nome exato do item",
+Inv:CreateInput({
+    Name = "🔎 Procurar e pegar item",
+    PlaceholderText = "Nome exato do item",
     RemoveTextAfterFocusLost = false,
     Callback = function(valor)
         local GiveTool = localizarGiveTool()
         if GiveTool then
             GiveTool:FireServer(valor)
-            Rayfield:Notify({
-                Title = "Item procurado!",
-                Content = "Tentando dar: " .. valor,
-                Duration = 3
-            })
         end
     end
 })

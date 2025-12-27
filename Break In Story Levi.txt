@@ -150,6 +150,29 @@ Energia:CreateButton({
 })
 
 -- ======================
+-- ABA ESPECIAL ✨
+-- ======================
+local Especial = Janela:CreateTab("✨ Especial", 4483362458)
+
+Especial:CreateButton({
+    Name = "Conseguir colete de ouro 🪙",
+    Callback = function()
+        local args = {
+            3,
+            "Armor2",
+            "Armor",
+            true,
+            1
+        }
+
+        ReplicatedStorage
+            :WaitForChild("Events")
+            :WaitForChild("Vending")
+            :FireServer(unpack(args))
+    end
+})
+
+-- ======================
 -- ABA INVENTÁRIO (ÚLTIMA)
 -- ======================
 local Inv = Janela:CreateTab("🧹 Inventário", 4483362458)
